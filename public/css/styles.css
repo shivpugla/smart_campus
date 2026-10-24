@@ -2332,6 +2332,7 @@ body::after {
   color: var(--accent-amber);
 }
 
+.upvote-btn.active,
 .upvote-btn.upvoted {
   background: var(--accent-terracotta);
   border-color: var(--accent-terracotta);

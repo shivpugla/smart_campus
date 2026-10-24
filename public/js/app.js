@@ -215,6 +215,9 @@ if (complaintForm) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = renderSubmissionResult(data.ticket);
 
+      // Refresh community feed in the background so new ticket is immediately present
+      loadPublicFeed();
+
       showToast('Complaint submitted successfully!', 'success');
     } catch (err) {
       showToast(err.message || 'Failed to submit complaint.', 'error');
@@ -294,6 +297,10 @@ function renderSubmissionResult(ticket) {
         <button class="btn btn-primary" onclick="navigateTo('track');document.getElementById('track-input').value='${ticket.ticket_number}';trackTicket();">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           Track This Ticket
+        </button>
+        <button class="btn btn-secondary-editorial" onclick="navigateTo('feed')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          View in Community Feed
         </button>
         <button class="btn btn-secondary" onclick="resetForm()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -513,7 +520,7 @@ function setUpvotedTickets(list) {
 }
 
 async function loadPublicFeed() {
-  const container = document.getElementById('feed-container');
+  const container = document.getElementById('feed-container') || document.getElementById('feed-grid');
   const emptyState = document.getElementById('feed-empty');
   if (!container) return;
 
@@ -522,7 +529,7 @@ async function loadPublicFeed() {
   const searchInput = document.getElementById('feed-search');
 
   const category = categorySelect ? categorySelect.value : feedActiveCategory;
-  const sort = sortSelect ? sortSelect.value : 'trending';
+  const sort = sortSelect ? sortSelect.value : 'newest';
   const search = searchInput ? searchInput.value.trim() : '';
 
   // Show loading spinner
@@ -567,12 +574,15 @@ async function loadPublicFeed() {
 function renderFeedCard(ticket, isUpvoted) {
   const upvotes = ticket.upvotes || 0;
   const isTrending = upvotes >= 10;
-  const safeSummary = escapeHtml(ticket.ai_summary || ticket.complaint_text);
+  const safeSummary = escapeHtml(ticket.ai_summary || ticket.complaint_text || 'Campus Maintenance Report');
   const safeSnippet = escapeHtml(ticket.complaint_text || '');
   const safeLocation = escapeHtml(`${ticket.location || 'Campus'}${ticket.building ? ` • ${ticket.building}` : ''}${ticket.room ? ` (${ticket.room})` : ''}`);
   const safeCategory = escapeHtml(ticket.ai_category || 'Maintenance');
   const safeDept = escapeHtml(ticket.ai_department || 'Facilities');
   const safeReporter = escapeHtml(ticket.student_name || 'Student');
+  const priority = ticket.ai_priority || 'medium';
+  const status = ticket.status || 'open';
+  const statusLabel = status.replace(/_/g, ' ');
 
   return `
     <div class="feed-card" id="feed-card-${ticket.id}">
@@ -582,10 +592,10 @@ function renderFeedCard(ticket, isUpvoted) {
             <span class="badge badge-category">
               ${safeCategory}
             </span>
-            <span class="badge badge-${ticket.ai_priority}">${ticket.ai_priority}</span>
+            <span class="badge badge-${priority}">${priority}</span>
             ${isTrending ? `<span class="feed-trending-pill">🔥 ${upvotes} Impact</span>` : ''}
           </div>
-          <span class="badge badge-${ticket.status}">${ticket.status.replace('_', ' ')}</span>
+          <span class="badge badge-${status}">${statusLabel}</span>
         </div>
 
         <div class="feed-location">
@@ -616,7 +626,7 @@ function renderFeedCard(ticket, isUpvoted) {
         </div>
 
         <div class="feed-actions">
-          <button class="upvote-btn ${isUpvoted ? 'active' : ''}" 
+          <button class="upvote-btn ${isUpvoted ? 'active upvoted' : ''}" 
                   id="upvote-btn-${ticket.id}" 
                   onclick="upvoteTicket('${ticket.id}', event)" 
                   title="Upvote if you are also experiencing this issue">
@@ -665,13 +675,13 @@ async function upvoteTicket(ticketId, event) {
     const svgEl = btn.querySelector('svg');
 
     if (action === 'upvote') {
-      btn.classList.add('active');
+      btn.classList.add('active', 'upvoted');
       if (labelEl) labelEl.textContent = 'I have this too';
       if (svgEl) svgEl.setAttribute('fill', 'currentColor');
       setUpvotedTickets([...upvotedList, ticketId]);
       showToast(`Upvoted! ${newUpvotes} students have confirmed this issue.`, 'success');
     } else {
-      btn.classList.remove('active');
+      btn.classList.remove('active', 'upvoted');
       if (labelEl) labelEl.textContent = 'Me too';
       if (svgEl) svgEl.setAttribute('fill', 'none');
       setUpvotedTickets(upvotedList.filter(id => id !== ticketId));
