@@ -53,7 +53,7 @@ async function safeFetchJson(url, options = {}) {
 }
 
 // ── State ────────────────────────────────────────────────────────────────
-let currentPage = 'auth';
+let currentPage = 'org';
 let staffSession = null;
 let currentUser = null;
 let authRole = 'student'; // 'student' | 'staff'
@@ -75,10 +75,10 @@ function navigateTo(page, isBack = false) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 
-  // Toggle navigation bar display: On dedicated auth page, show clean corner layout
+  // Toggle navigation bar display: On dedicated auth and org front page, show clean top bar layout
   const navWrapper = document.querySelector('.nav-wrapper');
   if (navWrapper) {
-    if (page === 'auth') {
+    if (page === 'auth' || page === 'org') {
       navWrapper.style.display = 'none';
     } else {
       navWrapper.style.display = '';
@@ -126,28 +126,28 @@ function navigateTo(page, isBack = false) {
 }
 
 function navigateBack() {
-  if (currentPage === 'home' || currentPage === 'auth') {
+  if (currentPage === 'home' || currentPage === 'auth' || currentPage === 'org') {
     updateGlobalBackButton();
     return;
   }
 
   while (navHistory.length > 0) {
     const prev = navHistory.pop();
-    if (prev && prev !== currentPage && prev !== 'auth') {
+    if (prev && prev !== currentPage && prev !== 'auth' && prev !== 'org') {
       navigateTo(prev, true);
       return;
     }
   }
 
-  // Once history is exhausted, stop at home page (the first page when website loads)
-  navigateTo('home', true);
+  // Once history is exhausted, stop at home page if logged in, or org page if unauthenticated
+  navigateTo(currentUser ? 'home' : 'org', true);
 }
 
 function updateGlobalBackButton() {
   const btn = document.getElementById('global-back-btn');
   if (!btn) return;
 
-  if (currentPage === 'home' || currentPage === 'auth') {
+  if (currentPage === 'home' || currentPage === 'auth' || currentPage === 'org') {
     btn.classList.add('disabled');
     btn.setAttribute('aria-disabled', 'true');
     btn.setAttribute('tabindex', '-1');
@@ -1997,6 +1997,133 @@ function updateThemeIcon(theme) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// ORGANISATIONS ONBOARDING & REGISTRATION
+// ══════════════════════════════════════════════════════════════════════════
+let registeredOrgData = null;
+
+function openRoleRegistration(role) {
+  setAuthRole(role);
+  setAuthMode('register');
+  navigateTo('auth');
+}
+
+function openRoleLogin() {
+  setAuthMode('login');
+  navigateTo('auth');
+}
+
+async function handleOrgRegister(e) {
+  e.preventDefault();
+  const submitBtn = document.getElementById('org-submit-btn');
+
+  const name = document.getElementById('org_name')?.value?.trim();
+  const type = document.getElementById('org_type')?.value;
+  const location = document.getElementById('org_location')?.value?.trim();
+  const capacity = document.getElementById('org_capacity')?.value;
+  const facilities = document.getElementById('org_facilities')?.value?.trim() || '';
+  const admin_name = document.getElementById('org_admin_name')?.value?.trim();
+  const admin_email = document.getElementById('org_admin_email')?.value?.trim();
+  const admin_phone = document.getElementById('org_admin_phone')?.value?.trim() || '';
+  const admin_password = document.getElementById('org_admin_password')?.value?.trim();
+
+  if (!name || !location || !admin_name || !admin_email || !admin_password) {
+    showToast('Please fill in all required organisation fields.', 'error');
+    return;
+  }
+
+  if (admin_password.length < 4) {
+    showToast('Admin password must be at least 4 characters.', 'error');
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></div>
+      Provisioning Organisation & AI Dispatch...
+    `;
+  }
+
+  try {
+    const payload = {
+      name,
+      type,
+      location,
+      capacity,
+      facilities,
+      admin_name,
+      admin_email,
+      admin_phone,
+      admin_password
+    };
+
+    const data = await safeFetchJson(`${API}/api/organizations/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    registeredOrgData = data;
+
+    // Show success view
+    const regCard = document.getElementById('org-registration-card');
+    const successCard = document.getElementById('org-success-card');
+    if (regCard) regCard.style.display = 'none';
+    if (successCard) {
+      successCard.style.display = 'block';
+      const codeEl = document.getElementById('org-success-code');
+      const nameEl = document.getElementById('org-success-name');
+      const locEl = document.getElementById('org-success-loc');
+      const emailEl = document.getElementById('org-success-email');
+      const msgEl = document.getElementById('org-success-message');
+
+      if (codeEl) codeEl.textContent = data.organization.org_code;
+      if (nameEl) nameEl.textContent = data.organization.name;
+      if (locEl) locEl.textContent = `${data.organization.type} • ${data.organization.location}`;
+      if (emailEl) emailEl.textContent = data.organization.admin_email;
+      if (msgEl) msgEl.textContent = `${data.organization.name} is now registered on CampusConnect. Gemini AI autonomous triage and routing is enabled.`;
+    }
+
+    // Auto log in as the newly provisioned administrator
+    if (data.adminUser) {
+      currentUser = { ...data.adminUser, role: 'admin' };
+      staffSession = currentUser;
+      localStorage.setItem('campus_connect_user', JSON.stringify(currentUser));
+      localStorage.setItem('campus_connect_staff', JSON.stringify(staffSession));
+      updateNavUserUI();
+    }
+
+    showToast(`🎉 Organisation "${name}" registered successfully!`, 'success');
+  } catch (err) {
+    showToast(err.message || 'Failed to register organisation.', 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `
+        <span>Register Organisation — Launch CampusConnect</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      `;
+    }
+  }
+}
+
+function enterAdminDashboard() {
+  if (registeredOrgData && registeredOrgData.adminUser) {
+    applyLoggedInUser(registeredOrgData.adminUser, 'admin', false);
+  } else if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) {
+    navigateTo('dashboard');
+    loadDashboard();
+  } else {
+    setAuthRole('staff');
+    setAuthMode('login');
+    navigateTo('auth');
+  }
+}
+
 // ── Startup initialization ────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -2045,8 +2172,8 @@ window.addEventListener('DOMContentLoaded', () => {
       navigateTo('home');
     }
   } else {
-    // Fresh visit: Open directly to Home page with the editorial hero and prompt bar
-    navigateTo('home');
+    // Fresh visit: Open directly to the Organisation front page
+    navigateTo('org');
   }
 
   updateGlobalBackButton();

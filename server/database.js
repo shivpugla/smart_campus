@@ -218,11 +218,28 @@ export async function initDatabase() {
     );
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS organizations (
+      id TEXT PRIMARY KEY,
+      org_code TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      location TEXT NOT NULL,
+      capacity TEXT DEFAULT '',
+      facilities TEXT DEFAULT '',
+      admin_name TEXT NOT NULL,
+      admin_email TEXT NOT NULL,
+      admin_phone TEXT DEFAULT '',
+      created_at DATETIME DEFAULT (datetime('now'))
+    );
+  `);
+
   db.exec("CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);");
   db.exec("CREATE INDEX IF NOT EXISTS idx_tickets_category ON tickets(ai_category);");
   db.exec("CREATE INDEX IF NOT EXISTS idx_tickets_department ON tickets(ai_department);");
   db.exec("CREATE INDEX IF NOT EXISTS idx_tickets_created ON tickets(created_at);");
   db.exec("CREATE INDEX IF NOT EXISTS idx_ticket_history_ticket ON ticket_history(ticket_id);");
+  db.exec("CREATE INDEX IF NOT EXISTS idx_organizations_code ON organizations(org_code);");
 
   // ── Seed departments ──────────────────────────────────────────────────
   const departments = [
@@ -265,6 +282,26 @@ export async function initDatabase() {
   for (const st of defaultStudents) {
     db.prepare(`INSERT OR REPLACE INTO students (id, name, email, phone, department, password) VALUES (?, ?, ?, ?, ?, ?)`)
       .run(st.id, st.name, st.email, st.phone, st.department, st.password);
+  }
+
+  // ── Seed default organization if empty ─────────────────────────────────
+  const orgCount = db.prepare('SELECT COUNT(*) as count FROM organizations').get().count;
+  if (orgCount === 0) {
+    db.prepare(`
+      INSERT INTO organizations (id, org_code, name, type, location, capacity, facilities, admin_name, admin_email, admin_phone)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      'org-zenith-01',
+      'ZENITH-CAMPUS',
+      'Zenith School of AI & Autonomous Systems',
+      'College / University',
+      'North Academic Quad, Innovation Corridor, Sector 4',
+      '4,500 Students & Residents',
+      'Autonomous Robotics Labs, Student Dormitories, AI Compute Cluster, Dining Halls',
+      'Administrator',
+      'admin@campus.edu',
+      '+1 (555) 019-2834'
+    );
   }
 
   // ── Seed demo tickets if empty ─────────────────────────────────────────

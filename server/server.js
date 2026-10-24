@@ -249,6 +249,120 @@ app.post('/api/tickets/:id/upvote', (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
+// ORGANIZATION MANAGEMENT & ONBOARDING ROUTES
+// ══════════════════════════════════════════════════════════════════════════════
+
+// POST /api/organizations/register — Register a new organisation (colleges, hostels, dorms)
+app.post('/api/organizations/register', (req, res) => {
+  try {
+    const {
+      name,
+      type = 'College / University',
+      location,
+      capacity = '',
+      facilities = '',
+      admin_name,
+      admin_email,
+      admin_phone = '',
+      admin_password
+    } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Organisation name is required.' });
+    }
+    if (!location || !location.trim()) {
+      return res.status(400).json({ error: 'Organisation campus location is required.' });
+    }
+    if (!admin_name || !admin_name.trim()) {
+      return res.status(400).json({ error: 'Administrator name is required.' });
+    }
+    if (!admin_email || !admin_email.trim()) {
+      return res.status(400).json({ error: 'Administrator email is required.' });
+    }
+    if (!admin_password || !admin_password.trim() || admin_password.trim().length < 4) {
+      return res.status(400).json({ error: 'Administrator password must be at least 4 characters long.' });
+    }
+
+    const cleanName = name.trim();
+    const cleanLocation = location.trim();
+    const cleanAdminName = admin_name.trim();
+    const cleanAdminEmail = admin_email.trim().toLowerCase();
+    const cleanAdminPass = admin_password.trim();
+
+    // Check if an organisation with this exact name already exists
+    const existingOrg = db.prepare('SELECT id, name FROM organizations WHERE LOWER(name) = ?').get(cleanName.toLowerCase());
+    if (existingOrg) {
+      return res.status(409).json({ error: `An organisation named "${cleanName}" is already registered on CampusConnect.` });
+    }
+
+    const orgId = 'org-' + uuidv4().slice(0, 8);
+    const slug = cleanName.replace(/[^A-Za-z0-9]/g, '').slice(0, 6).toUpperCase() || 'CAMPUS';
+    const orgCode = `ORG-${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    db.prepare(`
+      INSERT INTO organizations (id, org_code, name, type, location, capacity, facilities, admin_name, admin_email, admin_phone)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      orgId,
+      orgCode,
+      cleanName,
+      type,
+      cleanLocation,
+      capacity ? capacity.trim() : '',
+      facilities ? facilities.trim() : '',
+      cleanAdminName,
+      cleanAdminEmail,
+      admin_phone ? admin_phone.trim() : ''
+    );
+
+    // Auto-provision administrator staff account if not already in staff table
+    let adminStaff = db.prepare('SELECT id, name, email, department, role FROM staff WHERE LOWER(email) = ?').get(cleanAdminEmail);
+    if (!adminStaff) {
+      const staffId = 'staff-' + uuidv4().slice(0, 8);
+      db.prepare(`
+        INSERT INTO staff (id, name, email, department, role, password)
+        VALUES (?, ?, ?, 'Administration', 'admin', ?)
+      `).run(staffId, cleanAdminName, cleanAdminEmail, cleanAdminPass);
+
+      adminStaff = {
+        id: staffId,
+        name: cleanAdminName,
+        email: cleanAdminEmail,
+        department: 'Administration',
+        role: 'admin'
+      };
+    }
+
+    const createdOrg = db.prepare('SELECT * FROM organizations WHERE id = ?').get(orgId);
+
+    res.status(201).json({
+      success: true,
+      message: 'Organisation registered successfully! Your campus instance is now active.',
+      organization: createdOrg,
+      adminUser: adminStaff
+    });
+  } catch (err) {
+    console.error('Error registering organisation:', err);
+    res.status(500).json({ error: 'Failed to register organisation. Please try again.' });
+  }
+});
+
+// GET /api/organizations — List registered organisations
+app.get('/api/organizations', (req, res) => {
+  try {
+    const orgs = db.prepare(`
+      SELECT id, org_code, name, type, location, capacity, facilities, admin_name, admin_email, created_at
+      FROM organizations
+      ORDER BY created_at DESC
+    `).all();
+    res.json({ success: true, count: orgs.length, organizations: orgs });
+  } catch (err) {
+    console.error('Error fetching organizations:', err);
+    res.status(500).json({ error: 'Failed to retrieve organisations.' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
 // UNIFIED AUTHENTICATION ROUTES (STUDENTS & STAFF)
 // ══════════════════════════════════════════════════════════════════════════════
 

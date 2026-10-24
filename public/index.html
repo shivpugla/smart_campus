@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Syne:wght@700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="/css/styles.css?v=2.9">
+  <link rel="stylesheet" href="/css/styles.css?v=3.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23D36135'/><text y='.72em' x='50%' text-anchor='middle' font-size='48' font-family='sans-serif' font-weight='900' fill='%23FAF8F5'>CC</text></svg>">
   
   <!-- Zero-FOUC Theme Initializer: Default to Warm Editorial Sand Canvas -->
@@ -101,6 +101,309 @@
           </div>
         </div>
       </nav>
+    </div>
+
+    <!-- ===================================================================
+         ORGANISATIONS ONBOARDING FRONT PAGE (Colleges, Hostels, Dorms)
+         =================================================================== -->
+    <div id="page-org" class="page active">
+      <div class="org-page-container">
+        <!-- Top Bar: Left = Company Name, Right = Hover Registration Dropdown -->
+        <header class="org-top-bar">
+          <!-- Top Left: Company Name -->
+          <div class="org-brand-corner" onclick="navigateTo('org')">
+            <div class="nav-logo-glyph">CC</div>
+            <div class="nav-brand-text">
+              <div class="nav-brand-title-wrap">
+                <span class="nav-title">CampusConnect</span><span class="nav-title-dot">.</span>
+              </div>
+              <span class="nav-sub-badge">INSTITUTIONAL ONBOARDING</span>
+            </div>
+          </div>
+
+          <!-- Top Right Corner: Registration Dropdown + Action Controls -->
+          <div class="org-top-right">
+            <!-- Registration Hover Trigger and Dropdown -->
+            <div class="org-reg-dropdown-wrapper">
+              <button type="button" class="org-reg-btn" id="org-reg-btn" aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <line x1="20" y1="8" x2="20" y2="14"></line>
+                  <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                <span>Registration</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" class="org-dropdown-chevron">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+
+              <!-- Hover Menu revealing Student and Staff Registration Buttons -->
+              <div class="org-reg-dropdown-menu" id="org-reg-dropdown-menu">
+                <div class="org-dropdown-header">
+                  <span class="org-dropdown-micro">CAMPUS REGISTRATION</span>
+                  <span class="org-dropdown-hint">Select your role to get started</span>
+                </div>
+                
+                <div class="org-dropdown-actions">
+                  <!-- Button 1: Students Registration -->
+                  <button type="button" class="org-role-action-btn student-action" onclick="openRoleRegistration('student')">
+                    <div class="role-action-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                      </svg>
+                    </div>
+                    <div class="role-action-content">
+                      <div class="role-action-title">Student Registration</div>
+                      <div class="role-action-desc">Join campus feed & report room/hostel maintenance issues</div>
+                    </div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="role-arrow">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+
+                  <!-- Button 2: Staff Registration -->
+                  <button type="button" class="org-role-action-btn staff-action" onclick="openRoleRegistration('staff')">
+                    <div class="role-action-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                      </svg>
+                    </div>
+                    <div class="role-action-content">
+                      <div class="role-action-title">Staff Registration</div>
+                      <div class="role-action-desc">Operations crews, technicians, wardens & supervisors</div>
+                    </div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="role-arrow">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="org-dropdown-footer">
+                  <span>Already have an account?</span>
+                  <a href="javascript:void(0)" onclick="openRoleLogin()" class="org-dropdown-login-link">Sign In &rarr;</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Sign In button -->
+            <button type="button" class="org-quick-signin-btn" onclick="openRoleLogin()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+              <span>Sign In</span>
+            </button>
+
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mocha / Warm Oat Theme" aria-label="Toggle theme">
+              <span class="theme-icon-sun-org">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              </span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Middle of Page: Register Your Organisation -->
+        <main class="org-main-content">
+          <div class="org-form-wrapper">
+            <!-- Header Pill & Editorial Title -->
+            <div class="org-form-header">
+              <div class="org-pill-tag">
+                <span class="org-pill-dot"></span>
+                <span>ENTERPRISE & CAMPUS ONBOARDING</span>
+              </div>
+              <h1 class="org-editorial-title">
+                Register Your Organisation<span class="accent-dot">.</span>
+              </h1>
+              <p class="org-editorial-sub">
+                Tailored for <strong>colleges, hostels, and dormitories</strong>. Deploy an autonomous Gemini-powered maintenance network for your campus in seconds.
+              </p>
+            </div>
+
+            <!-- Organisation Form Card -->
+            <div class="org-card" id="org-registration-card">
+              <form id="org-register-form" onsubmit="handleOrgRegister(event)">
+                <div class="org-form-grid">
+                  <!-- Section 1: Organisation Profile -->
+                  <div class="org-form-section-title">
+                    <span class="org-step-num">01</span>
+                    <span>Organisation Details</span>
+                  </div>
+
+                  <!-- Organisation Name -->
+                  <div class="form-group full-width">
+                    <label for="org_name" class="form-label required">Organisation Name</label>
+                    <input type="text" id="org_name" name="name" class="form-input" required
+                      placeholder="e.g. Zenith College of AI, Maplewood Dormitory, North Hall Hostel">
+                  </div>
+
+                  <!-- Organisation Type Selector -->
+                  <div class="form-group half-width">
+                    <label for="org_type" class="form-label required">Organisation Type</label>
+                    <select id="org_type" name="type" class="form-input" required>
+                      <option value="College / University">🎓 College / University</option>
+                      <option value="Hostel / Residential Hall" selected>🏠 Hostel / Residential Hall</option>
+                      <option value="Dormitory Complex">🏢 Dormitory Complex</option>
+                      <option value="Campus / Institute">🏛️ Campus / Institute</option>
+                      <option value="School / Academy">🏫 School / Academy</option>
+                    </select>
+                  </div>
+
+                  <!-- Campus Location / Address -->
+                  <div class="form-group half-width">
+                    <label for="org_location" class="form-label required">Campus Location / Address</label>
+                    <input type="text" id="org_location" name="location" class="form-input" required
+                      placeholder="e.g. Sector 4, Innovation Way, Cambridge MA">
+                  </div>
+
+                  <!-- Student / Resident Capacity -->
+                  <div class="form-group half-width">
+                    <label for="org_capacity" class="form-label">Estimated Resident / Student Capacity</label>
+                    <select id="org_capacity" name="capacity" class="form-input">
+                      <option value="Under 500 Residents">Under 500 Residents</option>
+                      <option value="500 - 1,500 Residents" selected>500 - 1,500 Residents</option>
+                      <option value="1,500 - 5,000 Students">1,500 - 5,000 Students</option>
+                      <option value="5,000 - 15,000 Students">5,000 - 15,000 Students</option>
+                      <option value="15,000+ Campus Population">15,000+ Campus Population</option>
+                    </select>
+                  </div>
+
+                  <!-- Primary Facilities / Wings -->
+                  <div class="form-group half-width">
+                    <label for="org_facilities" class="form-label">Primary Facilities & Wings</label>
+                    <input type="text" id="org_facilities" name="facilities" class="form-input"
+                      placeholder="e.g. Dorm Towers A/B, Dining Hall, Tech Labs, Gym">
+                  </div>
+
+                  <!-- Section 2: Administrator & Security Account -->
+                  <div class="org-form-section-title" style="margin-top: 1rem;">
+                    <span class="org-step-num">02</span>
+                    <span>Master Administrator Account</span>
+                  </div>
+
+                  <!-- Admin Name -->
+                  <div class="form-group third-width">
+                    <label for="org_admin_name" class="form-label required">Admin Full Name</label>
+                    <input type="text" id="org_admin_name" name="admin_name" class="form-input" required
+                      placeholder="e.g. Dr. Marcus Vance / Warden John">
+                  </div>
+
+                  <!-- Admin Email -->
+                  <div class="form-group third-width">
+                    <label for="org_admin_email" class="form-label required">Official Admin Email</label>
+                    <input type="email" id="org_admin_email" name="admin_email" class="form-input" required
+                      placeholder="admin@yourcampus.edu">
+                  </div>
+
+                  <!-- Admin Phone -->
+                  <div class="form-group third-width">
+                    <label for="org_admin_phone" class="form-label">Emergency Phone</label>
+                    <input type="tel" id="org_admin_phone" name="admin_phone" class="form-input"
+                      placeholder="+1 (555) 019-2834">
+                  </div>
+
+                  <!-- Master Admin Password -->
+                  <div class="form-group full-width">
+                    <label for="org_admin_password" class="form-label required">Master Admin Password</label>
+                    <input type="password" id="org_admin_password" name="admin_password" class="form-input" required minlength="4"
+                      placeholder="Create secure administrator password (min 4 characters)">
+                    <span class="field-hint">Used to access the campus operations command center and staff dispatch dashboard.</span>
+                  </div>
+                </div>
+
+                <!-- Registration Actions & Notice -->
+                <div class="org-form-actions">
+                  <div class="org-terms-note">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>Instant activation • Full Gemini AI Triage enabled • Multi-building routing</span>
+                  </div>
+
+                  <button type="submit" class="org-submit-btn" id="org-submit-btn">
+                    <span>Register Organisation — Launch CampusConnect</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Registration Success State Card (hidden by default) -->
+            <div class="org-card org-success-card" id="org-success-card" style="display:none;">
+              <div class="org-success-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="28" height="28">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <h2 class="org-success-title">Organisation Registered Successfully!</h2>
+              <p class="org-success-sub" id="org-success-message">
+                Your campus facility network has been provisioned and is ready for real-time dispatch.
+              </p>
+
+              <div class="org-code-display-box">
+                <span class="org-code-label">YOUR ORGANISATION CODE</span>
+                <div class="org-code-value" id="org-success-code">ORG-CAMPUS-7192</div>
+                <span class="org-code-note">Share this code with students and staff for automated campus affiliation.</span>
+              </div>
+
+              <div class="org-success-details-grid">
+                <div class="org-success-item">
+                  <span class="item-label">Organisation</span>
+                  <span class="item-val" id="org-success-name">—</span>
+                </div>
+                <div class="org-success-item">
+                  <span class="item-label">Type & Location</span>
+                  <span class="item-val" id="org-success-loc">—</span>
+                </div>
+                <div class="org-success-item">
+                  <span class="item-label">Admin Email</span>
+                  <span class="item-val" id="org-success-email">—</span>
+                </div>
+              </div>
+
+              <div class="org-success-actions">
+                <button type="button" class="btn btn-primary" id="org-enter-staff-btn" onclick="enterAdminDashboard()">
+                  <span>Open Staff Command Center &rarr;</span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="openRoleRegistration('student')">
+                  <span>Student Registration &rarr;</span>
+                </button>
+                <button type="button" class="btn btn-ghost" onclick="navigateTo('home')">
+                  <span>Explore Campus Portal</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Institutional Feature Badges beneath middle form -->
+            <div class="org-trust-badges">
+              <div class="trust-badge">
+                <span class="trust-icon">⚡</span>
+                <span class="trust-text">Gemini 3.0 Multimodal Triage</span>
+              </div>
+              <div class="trust-badge">
+                <span class="trust-icon">🏢</span>
+                <span class="trust-text">Colleges, Hostels & Dorms</span>
+              </div>
+              <div class="trust-badge">
+                <span class="trust-icon">🔍</span>
+                <span class="trust-text">Automated Duplicate Detection</span>
+              </div>
+              <div class="trust-badge">
+                <span class="trust-icon">📊</span>
+                <span class="trust-text">Real-Time SLA & Department Analytics</span>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
 
     <!-- ===================================================================
@@ -542,7 +845,7 @@
     <!-- ===================================================================
          HERO LANDING (Home - Editorial Warm-Brutalist / PROMPTCRAFTED Aesthetic)
          =================================================================== -->
-    <div id="page-home" class="page active">
+    <div id="page-home" class="page">
       <div class="hero editorial-hero">
         <!-- Top Pill Tag: [• Next-Gen AI Facility Intelligence • Gemini 3.0 Flash] -->
         <div class="hero-top-capsule">
@@ -1097,6 +1400,6 @@
     <div id="toast-container" class="toast-container"></div>
   </div>
 
-  <script src="/js/app.js?v=2.9"></script>
+  <script src="/js/app.js?v=3.0"></script>
 </body>
 </html>

@@ -3362,3 +3362,631 @@ body::after {
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   ORGANISATIONS ONBOARDING FRONT PAGE (Colleges, Hostels, Dorms)
+   ══════════════════════════════════════════════════════════════════════════ */
+.org-page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--canvas-bg);
+  position: relative;
+  width: 100%;
+}
+
+/* ── Top Bar: Left = Company Branding, Right = Hover Registration Dropdown ── */
+.org-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2.5rem;
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 50;
+}
+
+.org-brand-corner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--transition-fast);
+}
+
+.org-brand-corner:hover {
+  transform: translateY(-1px);
+}
+
+.org-top-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  position: relative;
+}
+
+/* ── Registration Hover Trigger & Dropdown ────────────────────────────── */
+.org-reg-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.org-reg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.62rem 1.25rem;
+  background: var(--accent-terracotta);
+  color: #FAF8F5;
+  border: 1px solid var(--accent-terracotta);
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(200, 90, 50, 0.3);
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.org-reg-btn:hover {
+  background: #bd5127;
+  border-color: #bd5127;
+  box-shadow: 0 6px 20px rgba(200, 90, 50, 0.42);
+  transform: translateY(-1px);
+}
+
+.org-dropdown-chevron {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.org-reg-dropdown-wrapper:hover .org-dropdown-chevron,
+.org-reg-dropdown-wrapper:focus-within .org-dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+/* Invisible hover bridge between button and dropdown menu */
+.org-reg-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 0;
+  right: 0;
+  height: 16px;
+}
+
+.org-reg-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 330px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 16px 40px rgba(28, 22, 19, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1.15rem;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.98);
+  transform-origin: top right;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.22s,
+              transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] .org-reg-dropdown-menu {
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Hover reveal trigger */
+.org-reg-dropdown-wrapper:hover .org-reg-dropdown-menu,
+.org-reg-dropdown-menu:hover,
+.org-reg-dropdown-wrapper:focus-within .org-reg-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.org-dropdown-header {
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.org-dropdown-micro {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-terracotta);
+  margin-bottom: 0.15rem;
+}
+
+.org-dropdown-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.org-dropdown-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Revealed Action Buttons (Student & Staff Registration) */
+.org-role-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  background: var(--canvas-bg);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.org-role-action-btn .role-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  background: rgba(200, 90, 50, 0.08);
+  color: var(--accent-terracotta);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.org-role-action-btn.staff-action .role-action-icon {
+  background: rgba(138, 90, 68, 0.1);
+  color: var(--accent-walnut);
+}
+
+[data-theme="dark"] .org-role-action-btn.staff-action .role-action-icon {
+  color: var(--accent-terracotta);
+  background: rgba(232, 122, 77, 0.12);
+}
+
+.org-role-action-btn .role-action-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.org-role-action-btn .role-action-title {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.org-role-action-btn .role-action-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+.org-role-action-btn .role-arrow {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.org-role-action-btn:hover {
+  border-color: var(--accent-terracotta);
+  background: rgba(200, 90, 50, 0.05);
+  box-shadow: 0 4px 14px rgba(200, 90, 50, 0.12);
+  transform: translateY(-1px);
+}
+
+.org-role-action-btn:hover .role-action-icon {
+  transform: scale(1.05);
+  background: rgba(200, 90, 50, 0.15);
+}
+
+.org-role-action-btn:hover .role-arrow {
+  color: var(--accent-terracotta);
+  transform: translateX(3px);
+}
+
+.org-dropdown-footer {
+  margin-top: 0.85rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.org-dropdown-login-link {
+  color: var(--accent-terracotta);
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.org-dropdown-login-link:hover {
+  text-decoration: underline;
+}
+
+.org-quick-signin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.58rem 1.05rem;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.org-quick-signin-btn:hover {
+  border-color: var(--accent-terracotta);
+  color: var(--accent-terracotta);
+  background: rgba(200, 90, 50, 0.06);
+  transform: translateY(-1px);
+}
+
+/* ── Middle of Page: Register Your Organisation ───────────────────────── */
+.org-main-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1.5rem 4.5rem;
+  width: 100%;
+}
+
+.org-form-wrapper {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.org-form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.org-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--accent-terracotta);
+  text-transform: uppercase;
+  margin-bottom: 0.85rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.org-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-terracotta);
+  animation: pulse-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.org-editorial-title {
+  font-family: var(--font-display);
+  font-size: 2.85rem;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 0.65rem;
+}
+
+.org-editorial-sub {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* Organisation Card */
+.org-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-3xl);
+  padding: 2.5rem;
+  box-shadow: 0 20px 50px rgba(30, 22, 18, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition-normal);
+}
+
+[data-theme="dark"] .org-card {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.org-form-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1.2rem;
+}
+
+.org-form-grid .full-width {
+  grid-column: span 6;
+}
+
+.org-form-grid .half-width {
+  grid-column: span 3;
+}
+
+.org-form-grid .third-width {
+  grid-column: span 2;
+}
+
+.org-form-section-title {
+  grid-column: span 6;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.org-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--accent-terracotta);
+  color: #FAF8F5;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.org-form-actions {
+  margin-top: 1.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.org-terms-note {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.org-terms-note svg {
+  color: var(--accent-terracotta);
+  flex-shrink: 0;
+}
+
+.org-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 2rem;
+  background: var(--accent-terracotta);
+  color: #FAF8F5;
+  border: none;
+  border-radius: var(--radius-xl);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(200, 90, 50, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.org-submit-btn:hover {
+  background: #bd5127;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px rgba(200, 90, 50, 0.45);
+}
+
+.org-submit-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Success Card View ────────────────────────────────────────────────── */
+.org-success-card {
+  text-align: center;
+  padding: 3rem 2.5rem;
+}
+
+.org-success-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.12);
+  color: #16A34A;
+  margin-bottom: 1.25rem;
+}
+
+[data-theme="dark"] .org-success-badge {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ADE80;
+}
+
+.org-success-title {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.org-success-sub {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  max-width: 540px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.5;
+}
+
+.org-code-display-box {
+  background: var(--canvas-bg);
+  border: 1px dashed var(--accent-terracotta);
+  border-radius: var(--radius-2xl);
+  padding: 1.25rem;
+  margin: 0 auto 1.75rem;
+  max-width: 440px;
+}
+
+.org-code-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.org-code-value {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--accent-terracotta);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.35rem;
+}
+
+.org-code-note {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.org-success-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.org-success-item {
+  background: var(--canvas-bg);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+}
+
+.org-success-item .item-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+.org-success-item .item-val {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.org-success-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+/* ── Trust Badges Strip ───────────────────────────────────────────────── */
+.org-trust-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.trust-icon {
+  font-size: 0.9rem;
+}
+
+/* ── Responsive Mobile Layout for Org Page ────────────────────────────── */
+@media (max-width: 860px) {
+  .org-top-bar {
+    padding: 1rem 1.25rem;
+  }
+
+  .org-editorial-title {
+    font-size: 2.1rem;
+  }
+
+  .org-card {
+    padding: 1.5rem;
+  }
+
+  .org-form-grid .half-width,
+  .org-form-grid .third-width {
+    grid-column: span 6;
+  }
+
+  .org-success-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .org-reg-dropdown-menu {
+    right: -10px;
+    width: 290px;
+  }
+}
+
+
