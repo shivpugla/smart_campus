@@ -78,14 +78,14 @@ function navigateTo(page, isBack = false) {
 }
 
 function navigateBack() {
-  if (currentPage === 'home') {
+  if (currentPage === 'home' || currentPage === 'auth') {
     updateGlobalBackButton();
     return;
   }
 
   while (navHistory.length > 0) {
     const prev = navHistory.pop();
-    if (prev && prev !== currentPage) {
+    if (prev && prev !== currentPage && prev !== 'auth') {
       navigateTo(prev, true);
       return;
     }
@@ -99,7 +99,7 @@ function updateGlobalBackButton() {
   const btn = document.getElementById('global-back-btn');
   if (!btn) return;
 
-  if (currentPage === 'home') {
+  if (currentPage === 'home' || currentPage === 'auth') {
     btn.classList.add('disabled');
     btn.setAttribute('aria-disabled', 'true');
     btn.setAttribute('tabindex', '-1');
