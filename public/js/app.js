@@ -2,7 +2,50 @@
 // CampusConnect — Main Application Logic
 // ═══════════════════════════════════════════════════════════════════════════
 
-const API = '';
+function getApiBase() {
+  if (typeof window === 'undefined') return '';
+  // If running from file:// or a different development server (e.g. VS Code Live Server 5500, Vite 5173, etc.)
+  if (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) {
+    return `http://${window.location.hostname || 'localhost'}:3000`;
+  }
+  return '';
+}
+
+const API = getApiBase();
+
+/**
+ * Robust JSON fetch wrapper that never throws raw SyntaxError "unexpected token"
+ * if the server returns HTML, 404, or non-JSON content.
+ */
+async function safeFetchJson(url, options = {}) {
+  let res;
+  try {
+    res = await fetch(url, options);
+  } catch (netErr) {
+    throw new Error('Unable to connect to the backend server. Please verify http://localhost:3000 is running.');
+  }
+
+  const contentType = res.headers.get('content-type') || '';
+  let data = null;
+
+  if (contentType.includes('application/json')) {
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      throw new Error('Received an unreadable response from the server.');
+    }
+  } else {
+    const text = await res.text();
+    const cleanText = text.replace(/<[^>]*>/g, '').trim().slice(0, 150);
+    throw new Error(cleanText || `Server returned HTTP ${res.status}: ${res.statusText}`);
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.error || `Request failed with status ${res.status}`);
+  }
+
+  return data;
+}
 
 // ── State ────────────────────────────────────────────────────────────────
 let currentPage = 'auth';
@@ -344,11 +387,7 @@ async function trackTicket() {
     </div>`;
 
   try {
-    const res = await fetch(`${API}/api/tickets/track/${ticketNumber}`);
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error);
-
+    const data = await safeFetchJson(`${API}/api/tickets/track/${ticketNumber}`);
     resultDiv.innerHTML = renderTrackResult(data.ticket, data.history);
   } catch (err) {
     resultDiv.innerHTML = `
@@ -546,11 +585,7 @@ async function loadPublicFeed() {
     if (sort) params.append('sort', sort);
     if (search) params.append('search', search);
 
-    const res = await fetch(`${API}/api/public/tickets?${params.toString()}`);
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || 'Failed to load campus feed');
-
+    const data = await safeFetchJson(`${API}/api/public/tickets?${params.toString()}`);
     const tickets = data.tickets || [];
     const upvotedIds = new Set(getUpvotedTickets());
 
@@ -901,25 +936,21 @@ async function handleAuthSubmit(e) {
         staffRole
       };
 
-      const res = await fetch(`${API}/api/auth/register`, {
+      const data = await safeFetchJson(`${API}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed.');
 
       applyLoggedInUser(data.user, authRole, true);
     } else {
       if (!email || !password) throw new Error('Please enter both email and password.');
 
-      const res = await fetch(`${API}/api/auth/login`, {
+      const data = await safeFetchJson(`${API}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: authRole, email, password })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Sign in failed.');
 
       applyLoggedInUser(data.user, authRole, false);
     }
@@ -1025,18 +1056,15 @@ function authLogout() {
 // ══════════════════════════════════════════════════════════════════════════
 async function staffLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('staff-email').value;
-  const password = document.getElementById('staff-password').value;
+  const email = document.getElementById('staff-email')?.value?.trim();
+  const password = document.getElementById('staff-password')?.value?.trim();
 
   try {
-    const res = await fetch(`${API}/api/staff/login`, {
+    const data = await safeFetchJson(`${API}/api/staff/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error);
 
     staffSession = data.staff;
     localStorage.setItem('campus_connect_staff', JSON.stringify(staffSession));
@@ -1079,8 +1107,7 @@ async function loadDashboard() {
 
 async function loadStats() {
   try {
-    const res = await fetch(`${API}/api/staff/stats`);
-    const data = await res.json();
+    const data = await safeFetchJson(`${API}/api/staff/stats`);
     renderStats(data);
     renderCharts(data);
   } catch (err) {
@@ -1231,9 +1258,8 @@ async function loadTickets() {
     if (priority) params.set('priority', priority);
     if (search) params.set('search', search);
 
-    const res = await fetch(`${API}/api/staff/tickets?${params}`);
-    const data = await res.json();
-    allTickets = data.tickets;
+    const data = await safeFetchJson(`${API}/api/staff/tickets?${params}`);
+    allTickets = data.tickets || [];
     renderTicketTable(allTickets);
   } catch (err) {
     console.error('Failed to load tickets:', err);
@@ -1290,10 +1316,7 @@ async function openTicketModal(ticketId) {
     </div>`;
 
   try {
-    const res = await fetch(`${API}/api/staff/tickets/${ticketId}`);
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error);
+    const data = await safeFetchJson(`${API}/api/staff/tickets/${ticketId}`);
 
     document.getElementById('modal-ticket-number').textContent = data.ticket.ticket_number;
     document.getElementById('modal-ticket-date').textContent = `Submitted ${formatDate(data.ticket.created_at)} by ${data.ticket.student_name}`;

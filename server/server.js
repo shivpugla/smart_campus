@@ -537,9 +537,23 @@ app.delete('/api/staff/tickets/:id', (req, res) => {
   res.json({ success: true, message: 'Ticket deleted' });
 });
 
+// ── API 404 Handler (Guarantees API requests always return JSON, never HTML) ─
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ error: `API route not found: ${req.method} ${req.originalUrl}` });
+});
+
 // ── Fallback: serve index.html for SPA ──────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
+// ── Global Error Handler (Guarantees error responses are JSON) ──────────────
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'Malformed JSON payload received.' });
+  }
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error.' });
 });
 
 // ── Start server ────────────────────────────────────────────────────────────
