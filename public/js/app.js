@@ -4,11 +4,13 @@
 
 function getApiBase() {
   if (typeof window === 'undefined') return '';
-  // If running from file:// or a different development server (e.g. VS Code Live Server 5500, Vite 5173, etc.)
-  if (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) {
-    return `http://${window.location.hostname || 'localhost'}:3000`;
+  // If already on port 3000, use relative paths directly
+  if (window.location.port === '3000') {
+    return '';
   }
-  return '';
+  // If running on Live Server (e.g. 5500), Vite, port 80 (empty string on localhost), or file://, target Express port 3000
+  const host = (window.location.hostname && window.location.hostname !== '') ? window.location.hostname : 'localhost';
+  return `http://${host}:3000`;
 }
 
 const API = getApiBase();
@@ -22,7 +24,7 @@ async function safeFetchJson(url, options = {}) {
   try {
     res = await fetch(url, options);
   } catch (netErr) {
-    throw new Error('Unable to connect to the backend server. Please verify http://localhost:3000 is running.');
+    throw new Error('Unable to connect to backend server. Please verify http://localhost:3000 is running.');
   }
 
   const contentType = res.headers.get('content-type') || '';
@@ -37,6 +39,9 @@ async function safeFetchJson(url, options = {}) {
   } else {
     const text = await res.text();
     const cleanText = text.replace(/<[^>]*>/g, '').trim().slice(0, 150);
+    if (res.status === 404 && typeof window !== 'undefined' && window.location.port !== '3000') {
+      throw new Error('Endpoint not found on current port. Please open http://localhost:3000 directly in your browser.');
+    }
     throw new Error(cleanText || `Server returned HTTP ${res.status}: ${res.statusText}`);
   }
 
